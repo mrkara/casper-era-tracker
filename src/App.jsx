@@ -51,6 +51,7 @@ function App() {
         nextSwitchBlock: nextEraStart,
         blockHash: data.last_switch_block.block_hash,
         blockHeight: data.last_switch_block.block_height,
+        nextBlockHeight: data.last_switch_block.block_height + 450, // Each era has ~450 blocks
         cached: data.cached,
         cacheAge: data.cache_age
       })
@@ -84,6 +85,7 @@ function App() {
       nextSwitchBlock: nextSwitchTime,
       blockHash: "6f511aaa2dde00f6513f4d4c216011a273fb002dc21b808e7e703319226d9029",
       blockHeight: 5499162,
+      nextBlockHeight: 5499162 + 450, // Each era has ~450 blocks
       cached: false,
       cacheAge: 0
     }
@@ -145,11 +147,15 @@ function App() {
     // Calculate how many eras in the future
     const erasInFuture = target - eraData.currentEra
     
-    // Each era is approximately 2 hours (7200 seconds)
+    // Each era is approximately 2 hours (7200 seconds) and ~450 blocks
     const millisecondsPerEra = 2 * 60 * 60 * 1000
+    const blocksPerEra = 450
     
     // Calculate the expected time
     const expectedTime = new Date(eraData.nextSwitchBlock.getTime() + (erasInFuture - 1) * millisecondsPerEra)
+    
+    // Calculate expected block height
+    const expectedBlockHeight = eraData.nextBlockHeight + (erasInFuture - 1) * blocksPerEra
     
     // Calculate time from now
     const now = new Date()
@@ -161,6 +167,7 @@ function App() {
     setCalculatedTime({
       era: target,
       expectedTime,
+      expectedBlockHeight,
       daysFromNow,
       hoursFromNow,
       minutesFromNow,
@@ -415,11 +422,17 @@ function App() {
 
               {calculatedTime && (
                 <div className="bg-white/5 rounded-lg p-4 border border-cyan-500/20">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
                       <p className="text-sm text-cyan-300 mb-1">Era {calculatedTime.era} Expected Time</p>
                       <p className="text-white font-mono text-sm">
                         {formatDateTime(calculatedTime.expectedTime)}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-cyan-300 mb-1">Expected Block Height</p>
+                      <p className="text-white font-semibold">
+                        {calculatedTime.expectedBlockHeight?.toLocaleString()}
                       </p>
                     </div>
                     <div>
@@ -431,7 +444,7 @@ function App() {
                   </div>
                   <div className="mt-3 pt-3 border-t border-cyan-500/20">
                     <p className="text-xs text-cyan-400">
-                      * Calculation based on 2-hour era duration. Actual times may vary due to network conditions.
+                      * Calculation based on 2-hour era duration and ~450 blocks per era. Actual values may vary due to network conditions.
                     </p>
                   </div>
                 </div>
@@ -482,8 +495,14 @@ function App() {
                 </p>
               </div>
               <div>
+                <p className="text-sm text-green-300 mb-1">Expected Block Height</p>
+                <p className="text-white font-semibold">
+                  {eraData?.nextBlockHeight?.toLocaleString()}
+                </p>
+              </div>
+              <div>
                 <p className="text-sm text-green-300 mb-1">Era Duration</p>
-                <p className="text-white">≈ 2 hours</p>
+                <p className="text-white">≈ 2 hours (~450 blocks)</p>
               </div>
             </CardContent>
           </Card>
