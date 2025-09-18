@@ -16,7 +16,9 @@ function App() {
   const [backendStatus, setBackendStatus] = useState('unknown')
   
   // Era Calculator state
+  const [calculatorMode, setCalculatorMode] = useState('era') // 'era' or 'datetime'
   const [targetEra, setTargetEra] = useState('')
+  const [targetDateTime, setTargetDateTime] = useState('')
   const [calculatedTime, setCalculatedTime] = useState(null)
   const [calculatorError, setCalculatorError] = useState('')
 
@@ -129,52 +131,128 @@ function App() {
     }
   }
 
-  // Calculate future era time
+  // Calculate future era time or find era for target datetime
   const calculateFutureEra = () => {
-    if (!eraData || !targetEra) return
+    if (!eraData) return
     
-    const target = parseInt(targetEra)
     setCalculatorError('')
     
-    if (isNaN(target)) {
-      setCalculatorError('Please enter a valid era number')
-      return
+    if (calculatorMode === 'era') {
+      // Era number mode
+      if (!targetEra) return
+      
+      const target = parseInt(targetEra)
+      
+      if (isNaN(target)) {
+        setCalculatorError('Please enter a valid era number')
+        return
+      }
+      
+      if (target <= eraData.currentEra) {
+        setCalculatorError('Please enter a future era number (greater than current era)')
+        return
+      }
+      
+      // Calculate how many eras in the future
+      const erasInFuture = target - eraData.currentEra
+      
+      // Each era is approximately 2 hours (7200 seconds) and ~450 blocks
+      const millisecondsPerEra = 2 * 60 * 60 * 1000
+      const blocksPerEra = 450
+      
+      // Calculate the expected time
+      const expectedTime = new Date(eraData.nextSwitchBlock.getTime() + (erasInFuture - 1) * millisecondsPerEra)
+      
+      // Calculate expected block height
+      const expectedBlockHeight = eraData.nextBlockHeight + (erasInFuture - 1) * blocksPerEra
+      
+      // Calculate time from now
+      const now = new Date()
+      const timeDiff = expectedTime.getTime() - now.getTime()
+      const daysFromNow = Math.floor(timeDiff / (1000 * 60 * 60 * 24))
+      const hoursFromNow = Math.floor((timeDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
+      const minutesFromNow = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60))
+      
+      setCalculatedTime({
+        mode: 'era',
+        era: target,
+        expectedTime,
+        expectedBlockHeight,
+        daysFromNow,
+        hoursFromNow,
+        minutesFromNow,
+        totalHours: Math.floor(timeDiff / (1000 * 60 * 60))
+      })
+    } else {
+      // DateTime mode
+      if (!targetDateTime) return
+      
+      const targetDate = new Date(targetDateTime)
+      const now = new Date()
+      
+      if (targetDate <= now) {
+        setCalculatorError('Please select a future date and time')
+        return
+      }
+      
+      // Calculate time difference from next era start to target date
+      const timeDiffFromNextEra = targetDate.getTime() - eraData.nextSwitchBlock.getTime()
+      
+      if (timeDiffFromNextEra < 0) {
+        // Target is before next era, so it's in current era
+        const nearestEra = eraData.currentEra
+        const eraStartTime = eraData.lastSwitchBlock
+        const eraEndTime = eraData.nextSwitchBlock
+        
+        // Calculate block height within current era
+        const eraProgress = (targetDate.getTime() - eraStartTime.getTime()) / (eraEndTime.getTime() - eraStartTime.getTime())
+        const blocksIntoEra = Math.floor(eraProgress * 450)
+        const expectedBlockHeight = eraData.lastSwitchBlockHeight + blocksIntoEra
+        
+        setCalculatedTime({
+          mode: 'datetime',
+          era: nearestEra,
+          selectedDateTime: targetDate,
+          expectedBlockHeight,
+          eraStartTime,
+          eraEndTime,
+          isCurrentEra: true,
+          daysFromNow: Math.floor((targetDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)),
+          hoursFromNow: Math.floor(((targetDate.getTime() - now.getTime()) % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
+          minutesFromNow: Math.floor(((targetDate.getTime() - now.getTime()) % (1000 * 60 * 60)) / (1000 * 60))
+        })
+      } else {
+        // Target is after next era start
+        const millisecondsPerEra = 2 * 60 * 60 * 1000
+        const blocksPerEra = 450
+        
+        // Calculate how many complete eras after the next era
+        const erasAfterNext = Math.floor(timeDiffFromNextEra / millisecondsPerEra)
+        const nearestEra = eraData.currentEra + 1 + erasAfterNext
+        
+        // Calculate era start and end times
+        const eraStartTime = new Date(eraData.nextSwitchBlock.getTime() + erasAfterNext * millisecondsPerEra)
+        const eraEndTime = new Date(eraStartTime.getTime() + millisecondsPerEra)
+        
+        // Calculate block height within the era
+        const eraProgress = (targetDate.getTime() - eraStartTime.getTime()) / millisecondsPerEra
+        const blocksIntoEra = Math.floor(eraProgress * blocksPerEra)
+        const expectedBlockHeight = eraData.nextBlockHeight + erasAfterNext * blocksPerEra + blocksIntoEra
+        
+        setCalculatedTime({
+          mode: 'datetime',
+          era: nearestEra,
+          selectedDateTime: targetDate,
+          expectedBlockHeight,
+          eraStartTime,
+          eraEndTime,
+          isCurrentEra: false,
+          daysFromNow: Math.floor((targetDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)),
+          hoursFromNow: Math.floor(((targetDate.getTime() - now.getTime()) % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
+          minutesFromNow: Math.floor(((targetDate.getTime() - now.getTime()) % (1000 * 60 * 60)) / (1000 * 60))
+        })
+      }
     }
-    
-    if (target <= eraData.currentEra) {
-      setCalculatorError('Please enter a future era number (greater than current era)')
-      return
-    }
-    
-    // Calculate how many eras in the future
-    const erasInFuture = target - eraData.currentEra
-    
-    // Each era is approximately 2 hours (7200 seconds) and ~450 blocks
-    const millisecondsPerEra = 2 * 60 * 60 * 1000
-    const blocksPerEra = 450
-    
-    // Calculate the expected time
-    const expectedTime = new Date(eraData.nextSwitchBlock.getTime() + (erasInFuture - 1) * millisecondsPerEra)
-    
-    // Calculate expected block height
-    const expectedBlockHeight = eraData.nextBlockHeight + (erasInFuture - 1) * blocksPerEra
-    
-    // Calculate time from now
-    const now = new Date()
-    const timeDiff = expectedTime.getTime() - now.getTime()
-    const daysFromNow = Math.floor(timeDiff / (1000 * 60 * 60 * 24))
-    const hoursFromNow = Math.floor((timeDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
-    const minutesFromNow = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60))
-    
-    setCalculatedTime({
-      era: target,
-      expectedTime,
-      expectedBlockHeight,
-      daysFromNow,
-      hoursFromNow,
-      minutesFromNow,
-      totalHours: Math.floor(timeDiff / (1000 * 60 * 60))
-    })
   }
 
   // Handle Enter key in calculator input
@@ -389,27 +467,77 @@ function App() {
                 Era Time Calculator
               </CardTitle>
               <p className="text-cyan-300 text-sm">
-                Enter a future era number to calculate when it will occur
+                Calculate era information by entering an era number or selecting a date & time
               </p>
             </CardHeader>
             <CardContent className="space-y-4">
+              {/* Mode Selector */}
+              <div className="flex gap-2 mb-4">
+                <Button
+                  variant={calculatorMode === 'era' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => {
+                    setCalculatorMode('era')
+                    setCalculatedTime(null)
+                    setCalculatorError('')
+                  }}
+                  className={calculatorMode === 'era' 
+                    ? 'bg-cyan-600 hover:bg-cyan-700 text-white' 
+                    : 'border-cyan-500/30 text-cyan-300 hover:bg-cyan-500/10'
+                  }
+                >
+                  Era Number
+                </Button>
+                <Button
+                  variant={calculatorMode === 'datetime' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => {
+                    setCalculatorMode('datetime')
+                    setCalculatedTime(null)
+                    setCalculatorError('')
+                  }}
+                  className={calculatorMode === 'datetime' 
+                    ? 'bg-cyan-600 hover:bg-cyan-700 text-white' 
+                    : 'border-cyan-500/30 text-cyan-300 hover:bg-cyan-500/10'
+                  }
+                >
+                  Date & Time
+                </Button>
+              </div>
+
+              {/* Input Section */}
               <div className="flex gap-4 items-end">
                 <div className="flex-1">
-                  <label className="text-sm text-cyan-300 mb-2 block">Target Era</label>
-                  <Input
-                    type="number"
-                    placeholder={`Enter era > ${eraData?.currentEra || 0}`}
-                    value={targetEra}
-                    onChange={(e) => setTargetEra(e.target.value)}
-                    onKeyPress={handleCalculatorKeyPress}
-                    className="bg-white/10 border-cyan-500/30 text-white placeholder:text-gray-400"
-                    min={eraData?.currentEra + 1}
-                  />
+                  {calculatorMode === 'era' ? (
+                    <>
+                      <label className="text-sm text-cyan-300 mb-2 block">Target Era</label>
+                      <Input
+                        type="number"
+                        placeholder={`Enter era > ${eraData?.currentEra || 0}`}
+                        value={targetEra}
+                        onChange={(e) => setTargetEra(e.target.value)}
+                        onKeyPress={handleCalculatorKeyPress}
+                        className="bg-white/10 border-cyan-500/30 text-white placeholder:text-gray-400"
+                        min={eraData?.currentEra + 1}
+                      />
+                    </>
+                  ) : (
+                    <>
+                      <label className="text-sm text-cyan-300 mb-2 block">Target Date & Time</label>
+                      <Input
+                        type="datetime-local"
+                        value={targetDateTime}
+                        onChange={(e) => setTargetDateTime(e.target.value)}
+                        className="bg-white/10 border-cyan-500/30 text-white"
+                        min={new Date().toISOString().slice(0, 16)}
+                      />
+                    </>
+                  )}
                 </div>
                 <Button 
                   onClick={calculateFutureEra}
                   className="bg-cyan-600 hover:bg-cyan-700 text-white"
-                  disabled={!targetEra || !eraData}
+                  disabled={(!targetEra && calculatorMode === 'era') || (!targetDateTime && calculatorMode === 'datetime') || !eraData}
                 >
                   <ArrowRight className="h-4 w-4 mr-2" />
                   Calculate
@@ -424,26 +552,82 @@ function App() {
 
               {calculatedTime && (
                 <div className="bg-white/5 rounded-lg p-4 border border-cyan-500/20">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div>
-                      <p className="text-sm text-cyan-300 mb-1">Era {calculatedTime.era} Expected Time</p>
-                      <p className="text-white font-mono text-sm">
-                        {formatDateTime(calculatedTime.expectedTime)}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-cyan-300 mb-1">Expected Block Height</p>
-                      <p className="text-white font-semibold">
-                        {calculatedTime.expectedBlockHeight?.toLocaleString()}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-cyan-300 mb-1">Time from Now</p>
-                      <p className="text-white font-semibold">
-                        {formatTimeFromNow(calculatedTime)}
-                      </p>
-                    </div>
-                  </div>
+                  {calculatedTime.mode === 'era' ? (
+                    // Era mode results
+                    <>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                          <p className="text-sm text-cyan-300 mb-1">Era {calculatedTime.era} Expected Time</p>
+                          <p className="text-white font-mono text-sm">
+                            {formatDateTime(calculatedTime.expectedTime)}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-cyan-300 mb-1">Expected Block Height</p>
+                          <p className="text-white font-semibold">
+                            {calculatedTime.expectedBlockHeight?.toLocaleString()}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-cyan-300 mb-1">Time from Now</p>
+                          <p className="text-white font-semibold">
+                            {formatTimeFromNow(calculatedTime)}
+                          </p>
+                        </div>
+                      </div>
+                    </>
+                  ) : (
+                    // DateTime mode results
+                    <>
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <div>
+                          <p className="text-sm text-cyan-300 mb-1">Selected Date & Time</p>
+                          <p className="text-white font-mono text-sm">
+                            {formatDateTime(calculatedTime.selectedDateTime)}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-cyan-300 mb-1">Era at That Time</p>
+                          <p className="text-white font-semibold text-lg">
+                            {calculatedTime.era}
+                            {calculatedTime.isCurrentEra && (
+                              <Badge variant="secondary" className="ml-2 bg-green-600/20 text-green-200 text-xs">
+                                Current Era
+                              </Badge>
+                            )}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-cyan-300 mb-1">Expected Block Height</p>
+                          <p className="text-white font-semibold">
+                            {calculatedTime.expectedBlockHeight?.toLocaleString()}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-cyan-300 mb-1">Time from Now</p>
+                          <p className="text-white font-semibold">
+                            {formatTimeFromNow(calculatedTime)}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="mt-4 pt-3 border-t border-cyan-500/20">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                          <div>
+                            <p className="text-cyan-300 mb-1">Era Start Time</p>
+                            <p className="text-white font-mono text-xs">
+                              {formatDateTime(calculatedTime.eraStartTime)}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-cyan-300 mb-1">Era End Time</p>
+                            <p className="text-white font-mono text-xs">
+                              {formatDateTime(calculatedTime.eraEndTime)}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </>
+                  )}
                   <div className="mt-3 pt-3 border-t border-cyan-500/20">
                     <p className="text-xs text-cyan-400">
                       * Calculation based on 2-hour era duration and ~450 blocks per era. Actual values may vary due to network conditions.
