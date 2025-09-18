@@ -28,6 +28,20 @@ def is_cache_valid():
     cache_age = current_time - cache['timestamp']
     return cache_age < CACHE_DURATION
 
+def fetch_current_network_state():
+    """Fetch current network state from cspr.live API"""
+    try:
+        url = "https://api.mainnet.cspr.live/network-state"
+        response = requests.get(url, timeout=10)
+        response.raise_for_status()
+        
+        data = response.json()
+        return data['data']['last_added_block']
+        
+    except requests.exceptions.RequestException as e:
+        print(f"Error fetching from cspr.live: {e}")
+        return None
+
 def fetch_from_cspr_cloud():
     """Fetch latest switch block data from CSPR.cloud API"""
     try:
@@ -46,13 +60,22 @@ def fetch_from_cspr_cloud():
         response = requests.get(url, params=params, headers=headers, timeout=10)
         response.raise_for_status()
         
-        data = response.json()
+        switch_block_data = response.json()
+        
+        # Also fetch current network state
+        current_state = fetch_current_network_state()
+        
+        # Combine the data
+        combined_data = {
+            'switch_block': switch_block_data,
+            'current_state': current_state
+        }
         
         # Update cache
-        cache['data'] = data
+        cache['data'] = combined_data
         cache['timestamp'] = time.time()
         
-        return data
+        return combined_data
         
     except requests.exceptions.RequestException as e:
         print(f"Error fetching from CSPR.cloud: {e}")
@@ -73,25 +96,31 @@ def get_era_info():
     try:
         data = get_era_data()
         
-        if not data or not data.get('data'):
+        if not data or not data.get('switch_block') or not data.get('switch_block', {}).get('data'):
             return jsonify({
                 'error': 'Failed to fetch era data',
                 'cached': False
             }), 500
         
-        block = data['data'][0]
+        # Get switch block data (last completed era)
+        switch_block = data['switch_block']['data'][0]
+        
+        # Get current network state (current era and block height)
+        current_state = data.get('current_state')
         
         # Calculate next era time (add 2 hours)
-        last_era_end = datetime.fromisoformat(block['timestamp'].replace('Z', '+00:00'))
+        last_era_end = datetime.fromisoformat(switch_block['timestamp'].replace('Z', '+00:00'))
         next_era_start = last_era_end + timedelta(hours=2)
         
-        # Prepare response
+        # Prepare response with corrected era information
         response_data = {
-            'current_era': block['era_id'],
+            'current_era': current_state['era_id'] if current_state else switch_block['era_id'] + 1,
+            'current_block_height': current_state['height'] if current_state else switch_block['block_height'],
             'last_switch_block': {
-                'timestamp': block['timestamp'],
-                'block_hash': block['block_hash'],
-                'block_height': block['block_height']
+                'era_id': switch_block['era_id'],
+                'timestamp': switch_block['timestamp'],
+                'block_hash': switch_block['block_hash'],
+                'block_height': switch_block['block_height']
             },
             'next_switch_block': {
                 'timestamp': next_era_start.isoformat().replace('+00:00', 'Z')

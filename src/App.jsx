@@ -50,7 +50,8 @@ function App() {
         lastSwitchBlock: lastEraEnd,
         nextSwitchBlock: nextEraStart,
         blockHash: data.last_switch_block.block_hash,
-        blockHeight: data.last_switch_block.block_height,
+        blockHeight: data.current_block_height, // Current network block height
+        lastSwitchBlockHeight: data.last_switch_block.block_height, // Last switch block height
         nextBlockHeight: data.last_switch_block.block_height + 450, // Each era has ~450 blocks
         cached: data.cached,
         cacheAge: data.cache_age
@@ -80,11 +81,12 @@ function App() {
     const nextSwitchTime = new Date(lastSwitchTime.getTime() + 2 * 60 * 60 * 1000)
     
     return {
-      currentEra: 19497,
+      currentEra: 19498, // Current active era
       lastSwitchBlock: lastSwitchTime,
       nextSwitchBlock: nextSwitchTime,
       blockHash: "6f511aaa2dde00f6513f4d4c216011a273fb002dc21b808e7e703319226d9029",
-      blockHeight: 5499162,
+      blockHeight: 5501000, // Current network block height
+      lastSwitchBlockHeight: 5499162, // Last switch block height
       nextBlockHeight: 5499162 + 450, // Each era has ~450 blocks
       cached: false,
       cacheAge: 0
@@ -468,6 +470,12 @@ function App() {
                 <p className="text-sm text-purple-300 mb-1">Timestamp</p>
                 <p className="text-white font-mono text-sm">
                   {eraData && formatDateTime(eraData.lastSwitchBlock)}
+                </p>
+              </div>
+              <div>
+                <p className="text-sm text-purple-300 mb-1">Block Height</p>
+                <p className="text-white font-semibold">
+                  {eraData?.lastSwitchBlockHeight?.toLocaleString()}
                 </p>
               </div>
               <div>
