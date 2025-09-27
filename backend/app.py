@@ -19,9 +19,9 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # Configuration
-CSPR_CLOUD_API_KEY = os.environ.get("CSPR_CLOUD_API_KEY")
+CSPR_CLOUD_API_KEY = os.environ.get("CSPR_CLOUD_API_KEY", "")
 CSPR_CLOUD_BASE_URL = "https://api.cspr.cloud"
-CACHE_DURATION = os.environ.get("CACHE_DURATION")  # in seconds
+CACHE_DURATION = int(os.environ.get("CACHE_DURATION", "60")) # default value of 60 seconds
 
 # In-memory cache
 cache = {"data": None, "timestamp": None}
