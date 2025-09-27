@@ -2,7 +2,7 @@
 
 A modern, full-stack web application that displays live Casper network era information with real-time countdown timers, dual-mode era calculators, and comprehensive network data visualization.
 
-![Casper Era Tracker Screenshot](https://raw.githubusercontent.com/mrkara/casper-era-tracker/master/screenshot.png)
+![Casper Era Tracker Screenshot](https://raw.githubusercontent.com/mrkara/casper-era-tracker/master/docs/screenshot.png)
 
 ## ✨ Features
 
