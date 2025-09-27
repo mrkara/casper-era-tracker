@@ -700,6 +700,57 @@ function App() {
           </Card>
         </div>
 
+        {/* Powered By Section */}
+        <div className="mb-8">
+          <Card className="bg-white/5 backdrop-blur-sm border-gray-500/20">
+            <CardContent className="py-6">
+              <div className="text-center space-y-4">
+                <h3 className="text-lg font-semibold text-gray-300 mb-4">Powered by</h3>
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-8">
+                  {/* CSPR.cloud */}
+                  <a 
+                    href="https://cspr.cloud/" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-3 hover:opacity-80 transition-opacity group"
+                  >
+                    <img 
+                      src="/cspr_cloud_logo.webp" 
+                      alt="CSPR.cloud" 
+                      className="h-8 w-auto group-hover:scale-105 transition-transform"
+                    />
+                    <div className="text-left">
+                      <p className="text-white font-medium">CSPR.cloud</p>
+                      <p className="text-gray-400 text-xs">Enterprise blockchain API</p>
+                    </div>
+                  </a>
+                  
+                  {/* CSPR.live */}
+                  <a 
+                    href="https://cspr.live/" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-3 hover:opacity-80 transition-opacity group"
+                  >
+                    <img 
+                      src="/cspr_live_logo.webp" 
+                      alt="CSPR.live" 
+                      className="h-8 w-auto group-hover:scale-105 transition-transform"
+                    />
+                    <div className="text-left">
+                      <p className="text-white font-medium">CSPR.live</p>
+                      <p className="text-gray-400 text-xs">Network state & explorer</p>
+                    </div>
+                  </a>
+                </div>
+                <p className="text-xs text-gray-500 mt-4">
+                  Thank you for providing the APIs that make this application possible
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
         {/* Footer */}
         <div className="text-center text-purple-300 text-sm space-y-2">
           <p>
