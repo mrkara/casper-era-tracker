@@ -61,6 +61,18 @@ A modern, full-stack web application that displays live Casper network era infor
 - **[Calculation Logic](docs/CALCULATIONS.md)**: Explanation of the era and block height calculation formulas.
 - **[Contributing Guidelines](CONTRIBUTING.md)**: How to contribute to the project.
 
+## 🤖 AI-Generated Content Disclaimer
+
+**Important Notice**: This project contains code and content that was generated with the assistance of artificial intelligence (AI) tools. While the code has been reviewed and tested, users should:
+
+- **Review all code** before using in production environments
+- **Test thoroughly** in their specific use cases
+- **Verify API integrations** and security implementations
+- **Understand the codebase** before making modifications
+- **Follow security best practices** when deploying
+
+Users are responsible for ensuring the code meets their security, performance, and functional requirements.
+
 ## 📄 License
 
 This project is licensed under the Apache License 2.0. See the [LICENSE](LICENSE) file for details.
