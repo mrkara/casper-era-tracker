@@ -72,7 +72,7 @@ git push heroku main
    - Start Command: `gunicorn app:app`
 4. **Set environment variables**:
    - `CSPR_CLOUD_API_KEY`: Your API key
-   - `PYTHON_VERSION`: 3.11.0
+   - `PYTHON_VERSION`: 3.13.0
 
 ### Option 4: DigitalOcean App Platform
 

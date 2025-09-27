@@ -17,7 +17,7 @@ A modern, full-stack web application that displays live Casper network era infor
 ### Prerequisites
 
 - Node.js 18+
-- Python 3.11+
+- Python 3.13+
 - pnpm (or npm/yarn)
 
 ### Installation
