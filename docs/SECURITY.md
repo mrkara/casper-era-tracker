@@ -67,3 +67,37 @@ gunicorn app:app
 - [ ] Dependencies updated
 - [ ] Security headers configured
 - [ ] Error handling doesn't leak sensitive information
+
+
+## Information Disclosure Prevention
+
+### Exception Handling
+
+The application implements secure exception handling to prevent information disclosure:
+
+- **Server-side logging**: Detailed error information is logged server-side for debugging
+- **Generic client responses**: Only generic error messages are returned to clients
+- **No stack traces**: Stack trace information is never exposed to external users
+- **Structured logging**: Uses Python's logging module with proper formatting
+
+### Error Response Examples
+
+**Secure Response (What clients see):**
+```json
+{
+  "error": "Internal server error"
+}
+```
+
+**Server-side Logging (What developers see):**
+```
+2025-09-27 14:30:15 - app - ERROR - Error processing era info: Connection timeout
+```
+
+### Best Practices
+
+- Never include exception details in API responses
+- Log detailed errors server-side for debugging
+- Use structured logging with appropriate log levels
+- Monitor logs for security incidents
+- Regularly review error handling patterns

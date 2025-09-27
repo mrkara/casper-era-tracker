@@ -1,12 +1,20 @@
-from flask import Flask, jsonify, request, send_from_directory, send_file
+from flask import Flask, jsonify, send_from_directory, request
 from flask_cors import CORS
 import requests
 import time
 import os
+import logging
 from datetime import datetime, timedelta
 
 app = Flask(__name__, static_folder='static')
 CORS(app)  # Enable CORS for all routes
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
 
 # Configuration
 CSPR_CLOUD_API_KEY = ""
@@ -39,7 +47,8 @@ def fetch_current_network_state():
         return data['data']['last_added_block']
         
     except requests.exceptions.RequestException as e:
-        print(f"Error fetching from cspr.live: {e}")
+        # Log detailed error for server-side debugging
+        logger.error(f"Error fetching from cspr.live: {str(e)}", exc_info=True)
         return None
 
 def fetch_from_cspr_cloud():
@@ -78,16 +87,17 @@ def fetch_from_cspr_cloud():
         return combined_data
         
     except requests.exceptions.RequestException as e:
-        print(f"Error fetching from CSPR.cloud: {e}")
+        # Log detailed error for server-side debugging
+        logger.error(f"Error fetching from CSPR.cloud: {str(e)}", exc_info=True)
         return None
 
 def get_era_data():
     """Get era data from cache or fetch from API if cache is expired"""
     if is_cache_valid():
-        print("Returning cached data")
+        logger.info("Returning cached data")
         return cache['data']
     
-    print("Cache expired or empty, fetching from API")
+    logger.info("Cache expired or empty, fetching from API")
     return fetch_from_cspr_cloud()
 
 @app.route('/api/era-info', methods=['GET'])
@@ -132,10 +142,11 @@ def get_era_info():
         return jsonify(response_data)
         
     except Exception as e:
-        print(f"Error processing era info: {e}")
+        # Log detailed error for server-side debugging
+        logger.error(f"Error processing era info: {str(e)}", exc_info=True)
+        # Return generic error message to client (no sensitive details)
         return jsonify({
-            'error': 'Internal server error',
-            'message': str(e)
+            'error': 'Internal server error'
         }), 500
 
 @app.route('/api/health', methods=['GET'])
@@ -187,12 +198,16 @@ def serve_react_static(path):
 def not_found(error):
     # For API routes, return JSON error
     if request.path.startswith('/api/'):
+        logger.warning(f"API endpoint not found: {request.path}")
         return jsonify({'error': 'Endpoint not found'}), 404
     # For all other routes, serve the React app
     return send_from_directory(app.static_folder, 'index.html')
 
 @app.errorhandler(500)
 def internal_error(error):
+    # Log the error for server-side debugging
+    logger.error(f"Internal server error: {str(error)}", exc_info=True)
+    # Return generic error message to client
     return jsonify({'error': 'Internal server error'}), 500
 
 if __name__ == '__main__':
