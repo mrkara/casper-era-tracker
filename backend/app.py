@@ -196,5 +196,6 @@ def internal_error(error):
     return jsonify({'error': 'Internal server error'}), 500
 
 if __name__ == '__main__':
-    # For development
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    # Use environment variable for debug mode (defaults to False for security)
+    debug_mode = os.getenv('FLASK_DEBUG', 'False').lower() == 'true'
+    app.run(host='0.0.0.0', port=5000, debug=debug_mode)
