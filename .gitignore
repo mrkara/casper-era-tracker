@@ -1,0 +1,96 @@
+# ==========================
+# Frontend (Vite + pnpm)
+# ==========================
+/frontend/node_modules/
+/frontend/dist/
+/frontend/dist-ssr/
+/frontend/.vite/
+/frontend/*.tsbuildinfo
+/frontend/vite.svg          # if generated at build time; remove if intentional
+
+# pnpm / npm / yarn caches & logs
+/frontend/.pnpm-store/
+/frontend/.pnpm-debug.log*
+/frontend/npm-debug.log*
+/frontend/yarn-debug.log*
+/frontend/yarn-error.log*
+/frontend/lerna-debug.log*
+
+# ==========================
+# Backend (Flask + Python)
+# ==========================
+/backend/__pycache__/
+/backend/*.py[cod]
+/backend/*$py.class
+
+# virtual environments
+/backend/.env
+/backend/.venv/
+/backend/venv/
+/backend/ENV/
+/backend/env/
+
+/backend/.pytest_cache/
+/backend/.mypy_cache/
+/backend/.pyre/
+/backend/.dmypy.json
+/backend/.pytype/
+
+/backend/build/
+/backend/develop-eggs/
+/backend/dist/
+/backend/downloads/
+/backend/eggs/
+/backend/.eggs/
+/backend/lib/
+/backend/lib64/
+/backend/parts/
+/backend/sdist/
+/backend/var/
+/backend/wheels/
+/backend/pip-wheel-metadata/
+/backend/share/python-wheels/
+/backend/*.egg-info/
+/backend/.installed.cfg
+/backend/*.egg
+
+# coverage / test artifacts
+/backend/.coverage
+/backend/.coverage.*
+/backend/.cache
+/backend/nosetests.xml
+/backend/coverage.xml
+/backend/*.cover
+/backend/*.py,cover
+/backend/htmlcov/
+
+/backend/instance/
+/backend/*.db
+/backend/*.sqlite3
+/backend/*.sqlite
+
+# Env & secrets
+/backend/*.env
+/backend/*.env.*
+!/backend/.env.example
+
+# ==========================
+# Editor / OS Junk
+# ==========================
+.DS_Store
+.AppleDouble
+.LSOverride
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*~
+.vscode/
+.idea/
+*.iml
+
+# ==========================
+# Monorepo / Misc
+# ==========================
+/.turbo/
+
