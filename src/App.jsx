@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge.jsx'
 import { Button } from '@/components/ui/button.jsx'
 import { Input } from '@/components/ui/input.jsx'
 import { Clock, Activity, Timer, Calendar, RefreshCw, Wifi, WifiOff, Calculator, ArrowRight, Server } from 'lucide-react'
+import GitHubCorner from './components/GitHubCorner.jsx'
 import './App.css'
 
 function App() {
@@ -346,6 +347,9 @@ function App() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 p-4">
+      {/* GitHub Corner Ribbon */}
+      <GitHubCorner />
+      
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="text-center mb-8">
