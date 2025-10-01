@@ -1,5 +1,7 @@
 # Casper Era Tracker
 
+[![GitHub stars](https://img.shields.io/github/stars/mrkara/casper-era-tracker?style=social)](https://github.com/mrkara/casper-era-tracker/stargazers)
+
 A modern, full-stack web application that displays live Casper network era information with real-time countdown timers, dual-mode era calculators, and comprehensive network data visualization.
 
 ![Casper Era Tracker Screenshot](https://raw.githubusercontent.com/mrkara/casper-era-tracker/master/docs/screenshot.png)
@@ -80,6 +82,8 @@ This project is licensed under the Apache License 2.0. See the [LICENSE](LICENSE
 ## 🙏 Acknowledgments
 
 This application is powered by the fantastic APIs from [CSPR.cloud](https://cspr.cloud/) and [CSPR.live](https://cspr.live/).
+
+The GitHub corner ribbon is based on [GitHub Corners](https://github.com/tholman/github-corners) by [Tim Holman](https://tholman.com/), licensed under the MIT License.
 
 ---
 
