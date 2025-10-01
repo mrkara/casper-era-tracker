@@ -16,7 +16,7 @@ function App() {
   const [lastUpdate, setLastUpdate] = useState(null)
   const [backendStatus, setBackendStatus] = useState('unknown')
   
-  // Era Calculator state
+  // Era Calculator state.
   const [calculatorMode, setCalculatorMode] = useState('era') // 'era' or 'datetime'
   const [targetEra, setTargetEra] = useState('')
   const [targetDateTime, setTargetDateTime] = useState('')
